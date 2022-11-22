@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.32014.148
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PredadorPresa", "PredadorPresa\PredadorPresa.csproj", "{726F2588-C45F-4C42-83EA-E20F6ABCE986}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{726F2588-C45F-4C42-83EA-E20F6ABCE986}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{726F2588-C45F-4C42-83EA-E20F6ABCE986}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{726F2588-C45F-4C42-83EA-E20F6ABCE986}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{726F2588-C45F-4C42-83EA-E20F6ABCE986}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {269CED0C-820D-49D9-811A-EB07D5DD3A2F}
+	EndGlobalSection
+EndGlobal
