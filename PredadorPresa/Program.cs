@@ -25,8 +25,6 @@ app.MapControllerRoute(
     pattern: "{controller}/{action=Index}/{id?}");
 
 app.MapFallbackToFile("index.html"); ;
-
-Ambiente.Iniciar(10, 1, 15);
 app.Run();
 
 

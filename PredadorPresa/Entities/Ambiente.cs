@@ -4,8 +4,8 @@ namespace PredadorPresa.Entities
 {
     public static class Ambiente
     {
+        private static readonly Random GeradorRandomico = new();
         public static Posicao[,] Posicoes { get; set; }
-        private static Random GeradorRandomico = new Random();
         private static Dictionary<Cordenada, Cordenada> PosicoesAtualizadas;
 
         public static void Iniciar(int tamanho, int numeroPresas, int numeroPredadores)
@@ -15,20 +15,6 @@ namespace PredadorPresa.Entities
             InicializaPresa(tamanho, numeroPresas);
 
             InicializaPredadores(tamanho, numeroPredadores);
-
-            EscreveAmbiente(tamanho);
-
-            /*for (int i = 0; i < 10; i++)
-            {
-                Console.WriteLine();
-                Movimenta(tamanho);
-                EscreveAmbiente(tamanho);
-
-                Thread.Sleep(1000);
-            }*/
-
-            var a = "";
-
         }
 
         public static bool Movimenta(int tamanho)
@@ -49,6 +35,8 @@ namespace PredadorPresa.Entities
 
                         PosicoesAtualizadas.Add(new Cordenada(i, j), novaPosicao);
                     }
+
+                    Posicoes[i, j].Feromonio--;
                 }
             }
 
@@ -59,10 +47,57 @@ namespace PredadorPresa.Entities
 
                 Posicoes[posicao.Value.PosicaoX, posicao.Value.PosicaoY].Agente = Posicoes[posicao.Key.PosicaoX, posicao.Key.PosicaoY].Agente;
                 Posicoes[posicao.Key.PosicaoX, posicao.Key.PosicaoY].Agente = null;
-            }
 
-            EscreveAmbiente(tamanho);
-            Console.WriteLine();
+                if (Posicoes[posicao.Value.PosicaoX, posicao.Value.PosicaoY].Agente.Tipo == TipoAgente.PREDADOR)
+                {
+                    if (AgentePerto(posicao.Value.PosicaoX, posicao.Value.PosicaoY, tamanho, TipoAgente.PRESA) != null)
+                    {
+                        Posicoes[posicao.Value.PosicaoX, posicao.Value.PosicaoY].Agente.Modo = ModoAgente.CACAR;
+                        Posicoes[posicao.Key.PosicaoX, posicao.Key.PosicaoY].Feromonio = 3;
+                    }
+                    else
+                        Posicoes[posicao.Value.PosicaoX, posicao.Value.PosicaoY].Agente.Modo = ModoAgente.VIVER;
+                }
+                else if (Posicoes[posicao.Value.PosicaoX, posicao.Value.PosicaoY].Agente.Tipo == TipoAgente.PRESA)
+                {
+                    if (AgentePerto(posicao.Value.PosicaoX, posicao.Value.PosicaoY, tamanho, TipoAgente.PREDADOR) != null)
+                    {
+                        Posicoes[posicao.Value.PosicaoX, posicao.Value.PosicaoY].Agente.QuantidadeEmocao = ValidaQuantidadeEmocao(--Posicoes[posicao.Value.PosicaoX, posicao.Value.PosicaoY].Agente.QuantidadeEmocao);
+                        Posicoes[posicao.Value.PosicaoX, posicao.Value.PosicaoY].Agente.IntensidadeEmocao = ValidaIntensidadeEmocao(++Posicoes[posicao.Value.PosicaoX, posicao.Value.PosicaoY].Agente.IntensidadeEmocao);
+                        Posicoes[posicao.Value.PosicaoX, posicao.Value.PosicaoY].Agente.Cor = CorAgente.VERMELHO;
+                    }
+                    else
+                    {
+                        Posicoes[posicao.Value.PosicaoX, posicao.Value.PosicaoY].Agente.Cor = CorAgente.AZUL;
+                        var cordenadaPresaPerto = AgentePerto(posicao.Value.PosicaoX, posicao.Value.PosicaoY, tamanho, TipoAgente.PRESA);
+
+                        if (cordenadaPresaPerto != null)
+                        {
+                            var presaPerto = Posicoes[cordenadaPresaPerto.PosicaoX, cordenadaPresaPerto.PosicaoY].Agente;
+
+                            if (presaPerto.Cor == CorAgente.AZUL)
+                                Posicoes[posicao.Value.PosicaoX, posicao.Value.PosicaoY].Agente.QuantidadeEmocao = ValidaQuantidadeEmocao(++Posicoes[posicao.Value.PosicaoX, posicao.Value.PosicaoY].Agente.QuantidadeEmocao);
+                            else
+                            {
+                                Posicoes[posicao.Value.PosicaoX, posicao.Value.PosicaoY].Agente.QuantidadeEmocao = -1;
+                                Posicoes[posicao.Value.PosicaoX, posicao.Value.PosicaoY].Agente.IntensidadeEmocao = ValidaIntensidadeEmocao(++Posicoes[posicao.Value.PosicaoX, posicao.Value.PosicaoY].Agente.IntensidadeEmocao);
+                                Posicoes[posicao.Value.PosicaoX, posicao.Value.PosicaoY].Agente.Interacoes = 3;
+                            }
+                        }
+                        else
+                        {
+                            Posicoes[posicao.Value.PosicaoX, posicao.Value.PosicaoY].Agente.Interacoes--;
+
+                            if (Posicoes[posicao.Value.PosicaoX, posicao.Value.PosicaoY].Agente.Interacoes <= 0)
+                            {
+                                Posicoes[posicao.Value.PosicaoX, posicao.Value.PosicaoY].Agente.Cor = CorAgente.AZUL;
+                                Posicoes[posicao.Value.PosicaoX, posicao.Value.PosicaoY].Agente.QuantidadeEmocao = ValidaQuantidadeEmocao(++Posicoes[posicao.Value.PosicaoX, posicao.Value.PosicaoY].Agente.QuantidadeEmocao);
+                                Posicoes[posicao.Value.PosicaoX, posicao.Value.PosicaoY].Agente.IntensidadeEmocao = ValidaIntensidadeEmocao(--Posicoes[posicao.Value.PosicaoX, posicao.Value.PosicaoY].Agente.IntensidadeEmocao);
+                            }
+                        }
+                    }
+                }
+            }
 
             return false;
         }
@@ -130,6 +165,11 @@ namespace PredadorPresa.Entities
 
                 if (posicaoPresa != null)
                     return BuscaNovaCordenadaPredador(posicaoX, posicaoY, posicaoPresa, tamanho);
+
+                var posicaoFeromonio = FeromonioPerto(posicaoX, posicaoY, tamanho);
+
+                if (posicaoFeromonio != null)
+                    return BuscaNovaCordenadaPredador(posicaoX, posicaoY, posicaoFeromonio, tamanho);
             }
 
             if (Posicoes[posicaoX, posicaoY].Agente?.Tipo == TipoAgente.PRESA)
@@ -201,118 +241,154 @@ namespace PredadorPresa.Entities
             return null;
         }
 
+        private static Cordenada FeromonioPerto(int posicaoX, int posicaoY, int tamanho)
+        {
+            for (int i = -1; i <= 1; i++)
+            {
+                for (int j = -1; j <= 1; j++)
+                {
+                    int posX = ValidaPosicao(posicaoX + i, tamanho);
+                    int posY = ValidaPosicao(posicaoY + j, tamanho);
+
+                    if (Posicoes[posX, posY].Feromonio > 0)
+                        return new Cordenada(posX, posY);
+                }
+            }
+
+            return null;
+        }
+
         private static Cordenada BuscaNovaCordenadaPredador(int posicaoX, int posicaoY, Cordenada cordenadaPresa, int tamanho)
         {
             if (cordenadaPresa.PosicaoX == posicaoX)
             {
-                /*var posicaoInc = ValidaPosicao(posicaoY + 1, tamanho);
-                if (Math.Abs(posicaoInc - cordenadaPresa.PosicaoY) < Math.Abs(posicaoY - cordenadaPresa.PosicaoY))
-                    return new Cordenada(posicaoX, posicaoInc);
-                else
-                    return new Cordenada(posicaoX, ValidaPosicao(posicaoY - 1, tamanho));*/
+                var cordenada = BuscaNovaCordenadaYPredador(posicaoX, posicaoY, cordenadaPresa, tamanho);
 
-                if (posicaoY > cordenadaPresa.PosicaoY)
-                {
-                    if (tamanho - 1 - posicaoY + cordenadaPresa.PosicaoY > posicaoY - cordenadaPresa.PosicaoY)
-                        return new Cordenada(posicaoX, ValidaPosicao(posicaoY - 1, tamanho));
-                    else
-                        return new Cordenada(posicaoX, ValidaPosicao(posicaoY + 1, tamanho));
-                }
-                else
-                {
-                    if (tamanho - 1 - cordenadaPresa.PosicaoY + posicaoY > cordenadaPresa.PosicaoY - posicaoY)
-                        return new Cordenada(posicaoX, ValidaPosicao(posicaoY + 1, tamanho));
-                    else
-                        return new Cordenada(posicaoX, ValidaPosicao(posicaoY - 1, tamanho));
-                }
+                if (Posicoes[cordenada.PosicaoX, cordenada.PosicaoY].Agente != null && Posicoes[cordenada.PosicaoX, cordenada.PosicaoY].Agente.Tipo == TipoAgente.PREDADOR)
+                    return BuscaNovaCordenadaXPredador(posicaoX, posicaoY, cordenadaPresa, tamanho);
+
+                return cordenada;
             }
             else
             {
-                /*var posicaoInc = ValidaPosicao(posicaoX + 1, tamanho);
-                if (Math.Abs(posicaoInc - cordenadaPresa.PosicaoX) < Math.Abs(posicaoX - cordenadaPresa.PosicaoX))
-                    return new Cordenada(posicaoInc, posicaoY);
-                else
-                    return new Cordenada(ValidaPosicao(posicaoX - 1, tamanho), posicaoY);*/
+                var cordenada = BuscaNovaCordenadaXPredador(posicaoX, posicaoY, cordenadaPresa, tamanho);
 
-                if (posicaoX > cordenadaPresa.PosicaoX)
-                {
-                    if (tamanho - 1 - posicaoX + cordenadaPresa.PosicaoX > posicaoX - cordenadaPresa.PosicaoX)
-                        return new Cordenada(ValidaPosicao(posicaoX - 1, tamanho), posicaoY);
-                    else
-                        return new Cordenada(ValidaPosicao(posicaoX + 1, tamanho), posicaoY);
-                }
-                else
-                {
-                    if (tamanho - 1 - cordenadaPresa.PosicaoX + posicaoX > cordenadaPresa.PosicaoX - posicaoX)
-                        return new Cordenada(ValidaPosicao(posicaoX + 1, tamanho), posicaoY);
-                    else
-                        return new Cordenada(ValidaPosicao(posicaoX - 1, tamanho), posicaoY);
-                }
+                if (Posicoes[cordenada.PosicaoX, cordenada.PosicaoY].Agente != null && Posicoes[cordenada.PosicaoX, cordenada.PosicaoY].Agente.Tipo == TipoAgente.PREDADOR)
+                    return BuscaNovaCordenadaYPredador(posicaoX, posicaoY, cordenadaPresa, tamanho);
+
+                return cordenada;
             }
         }
 
-        private static Cordenada BuscaNovaCordenadaPresa(int posicaoX, int posicaoY, Cordenada cordenadaPredador, int tamanho)
+        private static Cordenada BuscaNovaCordenadaXPredador(int posicaoX, int posicaoY, Cordenada cordenadaPresa, int tamanho)
         {
-            /*if (cordenadaPredador.PosicaoX == posicaoX)
+            if (posicaoX > cordenadaPresa.PosicaoX)
             {
-                if (cordenadaPredador.PosicaoY > posicaoY)
+                if (tamanho - 1 - posicaoX + cordenadaPresa.PosicaoX > posicaoX - cordenadaPresa.PosicaoX)
+                    return new Cordenada(ValidaPosicao(posicaoX - 1, tamanho), posicaoY);
+                else
+                    return new Cordenada(ValidaPosicao(posicaoX + 1, tamanho), posicaoY);
+            }
+            else
+            {
+                if (tamanho - 1 - cordenadaPresa.PosicaoX + posicaoX > cordenadaPresa.PosicaoX - posicaoX)
+                    return new Cordenada(ValidaPosicao(posicaoX + 1, tamanho), posicaoY);
+                else
+                    return new Cordenada(ValidaPosicao(posicaoX - 1, tamanho), posicaoY);
+            }
+        }
+
+        private static Cordenada BuscaNovaCordenadaYPredador(int posicaoX, int posicaoY, Cordenada cordenadaPresa, int tamanho)
+        {
+            if (posicaoY > cordenadaPresa.PosicaoY)
+            {
+                if (tamanho - 1 - posicaoY + cordenadaPresa.PosicaoY > posicaoY - cordenadaPresa.PosicaoY)
                     return new Cordenada(posicaoX, ValidaPosicao(posicaoY - 1, tamanho));
                 else
                     return new Cordenada(posicaoX, ValidaPosicao(posicaoY + 1, tamanho));
             }
             else
             {
-                if (cordenadaPredador.PosicaoX > posicaoX)
-                    return new Cordenada(ValidaPosicao(posicaoX - 1, tamanho), posicaoY);
+                if (tamanho - 1 - cordenadaPresa.PosicaoY + posicaoY > cordenadaPresa.PosicaoY - posicaoY)
+                    return new Cordenada(posicaoX, ValidaPosicao(posicaoY + 1, tamanho));
                 else
-                    return new Cordenada(ValidaPosicao(posicaoX + 1, tamanho), posicaoY);
-            }*/
+                    return new Cordenada(posicaoX, ValidaPosicao(posicaoY - 1, tamanho));
+            }
+        }
 
+        private static Cordenada BuscaNovaCordenadaPresa(int posicaoX, int posicaoY, Cordenada cordenadaPredador, int tamanho)
+        {
             if (cordenadaPredador.PosicaoX == posicaoX)
             {
-                /*var posicaoInc = ValidaPosicao(posicaoY + 1, tamanho);
-                if (Math.Abs(posicaoInc - cordenadaPresa.PosicaoY) < Math.Abs(posicaoY - cordenadaPresa.PosicaoY))
-                    return new Cordenada(posicaoX, posicaoInc);
-                else
-                    return new Cordenada(posicaoX, ValidaPosicao(posicaoY - 1, tamanho));*/
+                var cordenada = BuscaNovaCordenadaYPresa(posicaoX, posicaoY, cordenadaPredador, tamanho);
 
-                if (posicaoY > cordenadaPredador.PosicaoY)
-                {
-                    if (tamanho - 1 - posicaoY + cordenadaPredador.PosicaoY < posicaoY - cordenadaPredador.PosicaoY)
-                        return new Cordenada(posicaoX, ValidaPosicao(posicaoY - 1, tamanho));
-                    else
-                        return new Cordenada(posicaoX, ValidaPosicao(posicaoY + 1, tamanho));
-                }
-                else
-                {
-                    if (tamanho - 1 - cordenadaPredador.PosicaoY + posicaoY < cordenadaPredador.PosicaoY - posicaoY)
-                        return new Cordenada(posicaoX, ValidaPosicao(posicaoY + 1, tamanho));
-                    else
-                        return new Cordenada(posicaoX, ValidaPosicao(posicaoY - 1, tamanho));
-                }
+                if (Posicoes[cordenada.PosicaoX, cordenada.PosicaoY].Agente != null && Posicoes[cordenada.PosicaoX, cordenada.PosicaoY].Agente.Tipo == TipoAgente.PREDADOR)
+                    return BuscaNovaCordenadaXPresa(posicaoX, posicaoY, cordenadaPredador, tamanho);
+
+                return cordenada;
             }
             else
             {
-                /*var posicaoInc = ValidaPosicao(posicaoX + 1, tamanho);
-                if (Math.Abs(posicaoInc - cordenadaPresa.PosicaoX) < Math.Abs(posicaoX - cordenadaPresa.PosicaoX))
-                    return new Cordenada(posicaoInc, posicaoY);
-                else
-                    return new Cordenada(ValidaPosicao(posicaoX - 1, tamanho), posicaoY);*/
+                var cordenada = BuscaNovaCordenadaXPresa(posicaoX, posicaoY, cordenadaPredador, tamanho);
 
-                if (posicaoX > cordenadaPredador.PosicaoX)
-                {
-                    if (tamanho - 1 - posicaoX + cordenadaPredador.PosicaoX > posicaoX - cordenadaPredador.PosicaoX)
-                        return new Cordenada(ValidaPosicao(posicaoX - 1, tamanho), posicaoY);
-                    else
-                        return new Cordenada(ValidaPosicao(posicaoX + 1, tamanho), posicaoY);
-                }
+                if (Posicoes[cordenada.PosicaoX, cordenada.PosicaoY].Agente != null && Posicoes[cordenada.PosicaoX, cordenada.PosicaoY].Agente.Tipo == TipoAgente.PREDADOR)
+                    return BuscaNovaCordenadaYPresa(posicaoX, posicaoY, cordenadaPredador, tamanho);
+
+                return cordenada;
+            }
+        }
+
+        private static Cordenada BuscaNovaCordenadaYPresa(int posicaoX, int posicaoY, Cordenada cordenadaPredador, int tamanho)
+        {
+            if (posicaoY > cordenadaPredador.PosicaoY)
+            {
+                if (tamanho - 1 - posicaoY + cordenadaPredador.PosicaoY < posicaoY - cordenadaPredador.PosicaoY)
+                    return new Cordenada(posicaoX, ValidaPosicao(posicaoY - 1, tamanho));
                 else
-                {
-                    if (tamanho - 1 - cordenadaPredador.PosicaoX + posicaoX > cordenadaPredador.PosicaoX - posicaoX)
-                        return new Cordenada(ValidaPosicao(posicaoX + 1, tamanho), posicaoY);
-                    else
-                        return new Cordenada(ValidaPosicao(posicaoX - 1, tamanho), posicaoY);
-                }
+                    return new Cordenada(posicaoX, ValidaPosicao(posicaoY + 1, tamanho));
+            }
+            else if (posicaoY < cordenadaPredador.PosicaoY)
+            {
+                if (tamanho - 1 - cordenadaPredador.PosicaoY + posicaoY < cordenadaPredador.PosicaoY - posicaoY)
+                    return new Cordenada(posicaoX, ValidaPosicao(posicaoY + 1, tamanho));
+                else
+                    return new Cordenada(posicaoX, ValidaPosicao(posicaoY - 1, tamanho));
+            }
+            else
+            {
+                var novoY = ValidaPosicao(posicaoY + 1, tamanho);
+
+                if (Posicoes[posicaoX, novoY].Agente == null)
+                    return new Cordenada(posicaoX, novoY);
+
+                return new Cordenada(posicaoX, ValidaPosicao(posicaoY - 1, tamanho));
+            }
+        }
+
+        private static Cordenada BuscaNovaCordenadaXPresa(int posicaoX, int posicaoY, Cordenada cordenadaPredador, int tamanho)
+        {
+            if (posicaoX > cordenadaPredador.PosicaoX)
+            {
+                if (tamanho - 1 - posicaoX + cordenadaPredador.PosicaoX > posicaoX - cordenadaPredador.PosicaoX)
+                    return new Cordenada(ValidaPosicao(posicaoX + 1, tamanho), posicaoY);
+                else
+                    return new Cordenada(ValidaPosicao(posicaoX - 1, tamanho), posicaoY);
+            }
+            else if (posicaoX < cordenadaPredador.PosicaoX)
+            {
+                if (tamanho - 1 - cordenadaPredador.PosicaoX + posicaoX > cordenadaPredador.PosicaoX - posicaoX)
+                    return new Cordenada(ValidaPosicao(posicaoX + 1, tamanho), posicaoY);
+                else
+                    return new Cordenada(ValidaPosicao(posicaoX - 1, tamanho), posicaoY);
+            }
+            else
+            {
+                var novoX = ValidaPosicao(posicaoX + 1, tamanho);
+
+                if (Posicoes[novoX, posicaoY].Agente == null)
+                    return new Cordenada(novoX, posicaoY);
+
+                return new Cordenada(ValidaPosicao(posicaoX - 1, tamanho), posicaoY);
             }
         }
 
@@ -336,6 +412,28 @@ namespace PredadorPresa.Entities
                 return true;
 
             return false;
+        }
+
+        private static int ValidaQuantidadeEmocao(int quantidadeEmocao)
+        {
+            if (quantidadeEmocao > 3)
+                return 3;
+
+            if (quantidadeEmocao < -3)
+                return -3;
+
+            return quantidadeEmocao;
+        }
+
+        private static int ValidaIntensidadeEmocao(int quantidadeEmocao)
+        {
+            if (quantidadeEmocao > 3)
+                return 3;
+
+            if (quantidadeEmocao < 0)
+                return 0;
+
+            return quantidadeEmocao;
         }
 
         private static void EscreveAmbiente(int tamanho)

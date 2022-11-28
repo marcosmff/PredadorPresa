@@ -1,6 +1,4 @@
-﻿using PredadorPresa.Model;
-
-namespace PredadorPresa.Entities
+﻿namespace PredadorPresa.Entities
 {
     public class Agente
     {
@@ -8,15 +6,21 @@ namespace PredadorPresa.Entities
         {
             Tipo = tipo;
             Cor = CorAgente.AZUL;
+            Modo = ModoAgente.VIVER;
+            Interacoes = 0;
         }
 
         public TipoAgente Tipo { get; set; }
+        
+        public ModoAgente Modo { get; set; }
+
+        public CorAgente Cor { get; set; }
 
         public int QuantidadeEmocao { get; set; }
 
         public int IntensidadeEmocao { get; set; }
 
-        public CorAgente Cor { get; set; }
+        public int Interacoes { get; set; }
     }
 
     public enum TipoAgente
@@ -30,4 +34,10 @@ namespace PredadorPresa.Entities
         AZUL,
         VERMELHO
     }
+    public enum ModoAgente
+    {
+        VIVER,
+        CACAR
+    }
+
 }

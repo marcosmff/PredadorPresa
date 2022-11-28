@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using PredadorPresa.Entities;
+using PredadorPresa.Model;
 using System.Text.Json;
 
 namespace PredadorPresa.Controllers
@@ -11,16 +12,29 @@ namespace PredadorPresa.Controllers
         [HttpGet]
         public string[][] Get()
         {
-            var tamanho = 10;
-            var retorno = new string[tamanho][];
-            
+            var tamanho = 20;
+
             if (Ambiente.Movimenta(tamanho))
-            {
-            }
+                return new string[1][];
+
+            var retorno = MontaRetorno(tamanho);
+
+            return retorno;
+        }
+
+        [HttpPost]
+        public string[][] Post([FromBody] DadosInicioAmbiente dadosInicioAmbiente)
+        {
+            Ambiente.Iniciar(dadosInicioAmbiente.Tamanho, dadosInicioAmbiente.NumeroPresas, dadosInicioAmbiente.NumeroPredadores);
+
+            return MontaRetorno(dadosInicioAmbiente.Tamanho);
+        }
+
+        private string[][] MontaRetorno(int tamanho)
+        {
+            var retorno = new string[tamanho][];
 
             var posicoes = Ambiente.Posicoes;
-
-
 
             for (int i = 0; i < tamanho; i++)
             {
