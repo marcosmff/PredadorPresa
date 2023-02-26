@@ -20,7 +20,8 @@ export class Ambiente extends Component {
     }
 
     async movimentaAmbiente() {
-        const response = await fetch('predadorpresa');
+        let tamanho = this.state.tamanho;
+        const response = await fetch(`predadorpresa?tamanho=${tamanho}`);
 
         const dados = await response.json();
 
@@ -52,8 +53,6 @@ export class Ambiente extends Component {
             return <div>
 
                 {forecast.map(forecast2 => {
-                    console.log("rara", forecast2);
-
                     let obj = JSON.parse(forecast2);
                     let background = "espacamento-posicao";
 
@@ -105,7 +104,7 @@ export class Ambiente extends Component {
 
         console.log("automático", this.state.isMovimentoAutomatico);
         while (this.state.isMovimentoAutomatico) {
-            await new Promise(r => setTimeout(r, 200));
+            await new Promise(r => setTimeout(r, 50));
             await this.movimentaAmbiente();
         }
     }
@@ -190,6 +189,7 @@ export class Ambiente extends Component {
     }
 
     render() {
+        let ambiente = this.state.ambiente;
         let isMovimentoAutomatico = this.state.isMovimentoAutomatico;
 
         return (
@@ -205,8 +205,8 @@ export class Ambiente extends Component {
 
                 {!isMovimentoAutomatico && <button className="btn btn-primary" onClick={this.iniciaAmbiente}>Iniciar</button>}
 
-                {!isMovimentoAutomatico && <button className="btn btn-primary" onClick={this.movimentaAmbiente}>Movimenta</button>}
-                {!isMovimentoAutomatico && <button className="btn btn-primary" onClick={this.movimentaAutomatico}>Movimenta Automatico</button>}
+                {(!isMovimentoAutomatico && ambiente !== null) && <button className="btn btn-primary" onClick={this.movimentaAmbiente}>Movimenta</button>}
+                {(!isMovimentoAutomatico && ambiente !== null) && <button className="btn btn-primary" onClick={this.movimentaAutomatico}>Movimenta Automatico</button>}
                 {isMovimentoAutomatico && <button className="btn btn-primary" onClick={this.paraMovimentoAutomatico}>Parar Movimento</button>}
             </div>
         );

@@ -16,7 +16,7 @@
 
         public CorAgente Cor { get; set; }
 
-        public int QuantidadeEmocao { get; set; }
+        public int QualidadeEmocao { get; set; }
 
         public int IntensidadeEmocao { get; set; }
 

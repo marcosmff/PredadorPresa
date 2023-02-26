@@ -62,13 +62,12 @@ namespace PredadorPresa.Entities
                 {
                     if (AgentePerto(posicao.Value.PosicaoX, posicao.Value.PosicaoY, tamanho, TipoAgente.PREDADOR) != null)
                     {
-                        Posicoes[posicao.Value.PosicaoX, posicao.Value.PosicaoY].Agente.QuantidadeEmocao = ValidaQuantidadeEmocao(--Posicoes[posicao.Value.PosicaoX, posicao.Value.PosicaoY].Agente.QuantidadeEmocao);
+                        Posicoes[posicao.Value.PosicaoX, posicao.Value.PosicaoY].Agente.QualidadeEmocao = ValidaQualidadeEmocao(--Posicoes[posicao.Value.PosicaoX, posicao.Value.PosicaoY].Agente.QualidadeEmocao);
                         Posicoes[posicao.Value.PosicaoX, posicao.Value.PosicaoY].Agente.IntensidadeEmocao = ValidaIntensidadeEmocao(++Posicoes[posicao.Value.PosicaoX, posicao.Value.PosicaoY].Agente.IntensidadeEmocao);
                         Posicoes[posicao.Value.PosicaoX, posicao.Value.PosicaoY].Agente.Cor = CorAgente.VERMELHO;
                     }
                     else
                     {
-                        Posicoes[posicao.Value.PosicaoX, posicao.Value.PosicaoY].Agente.Cor = CorAgente.AZUL;
                         var cordenadaPresaPerto = AgentePerto(posicao.Value.PosicaoX, posicao.Value.PosicaoY, tamanho, TipoAgente.PRESA);
 
                         if (cordenadaPresaPerto != null)
@@ -76,12 +75,12 @@ namespace PredadorPresa.Entities
                             var presaPerto = Posicoes[cordenadaPresaPerto.PosicaoX, cordenadaPresaPerto.PosicaoY].Agente;
 
                             if (presaPerto.Cor == CorAgente.AZUL)
-                                Posicoes[posicao.Value.PosicaoX, posicao.Value.PosicaoY].Agente.QuantidadeEmocao = ValidaQuantidadeEmocao(++Posicoes[posicao.Value.PosicaoX, posicao.Value.PosicaoY].Agente.QuantidadeEmocao);
+                                Posicoes[posicao.Value.PosicaoX, posicao.Value.PosicaoY].Agente.QualidadeEmocao = ValidaQualidadeEmocao(++Posicoes[posicao.Value.PosicaoX, posicao.Value.PosicaoY].Agente.QualidadeEmocao);
                             else
                             {
-                                Posicoes[posicao.Value.PosicaoX, posicao.Value.PosicaoY].Agente.QuantidadeEmocao = -1;
+                                Posicoes[posicao.Value.PosicaoX, posicao.Value.PosicaoY].Agente.QualidadeEmocao = -1;
                                 Posicoes[posicao.Value.PosicaoX, posicao.Value.PosicaoY].Agente.IntensidadeEmocao = ValidaIntensidadeEmocao(++Posicoes[posicao.Value.PosicaoX, posicao.Value.PosicaoY].Agente.IntensidadeEmocao);
-                                Posicoes[posicao.Value.PosicaoX, posicao.Value.PosicaoY].Agente.Interacoes = 3;
+                                Posicoes[posicao.Value.PosicaoX, posicao.Value.PosicaoY].Agente.Interacoes = 2;
                             }
                         }
                         else
@@ -91,10 +90,13 @@ namespace PredadorPresa.Entities
                             if (Posicoes[posicao.Value.PosicaoX, posicao.Value.PosicaoY].Agente.Interacoes <= 0)
                             {
                                 Posicoes[posicao.Value.PosicaoX, posicao.Value.PosicaoY].Agente.Cor = CorAgente.AZUL;
-                                Posicoes[posicao.Value.PosicaoX, posicao.Value.PosicaoY].Agente.QuantidadeEmocao = ValidaQuantidadeEmocao(++Posicoes[posicao.Value.PosicaoX, posicao.Value.PosicaoY].Agente.QuantidadeEmocao);
+                                Posicoes[posicao.Value.PosicaoX, posicao.Value.PosicaoY].Agente.QualidadeEmocao = ValidaQualidadeEmocao(++Posicoes[posicao.Value.PosicaoX, posicao.Value.PosicaoY].Agente.QualidadeEmocao);
                                 Posicoes[posicao.Value.PosicaoX, posicao.Value.PosicaoY].Agente.IntensidadeEmocao = ValidaIntensidadeEmocao(--Posicoes[posicao.Value.PosicaoX, posicao.Value.PosicaoY].Agente.IntensidadeEmocao);
                             }
                         }
+
+                        if (Posicoes[posicao.Value.PosicaoX, posicao.Value.PosicaoY].Agente.QualidadeEmocao >= 0)
+                            Posicoes[posicao.Value.PosicaoX, posicao.Value.PosicaoY].Agente.Cor = CorAgente.AZUL;
                     }
                 }
             }
@@ -230,6 +232,9 @@ namespace PredadorPresa.Entities
             {
                 for (int j = -1; j <= 1; j++)
                 {
+                    if (posicaoX == i && posicaoY == j)
+                        continue;
+
                     int posX = ValidaPosicao(posicaoX + i, tamanho);
                     int posY = ValidaPosicao(posicaoY + j, tamanho);
 
@@ -377,9 +382,9 @@ namespace PredadorPresa.Entities
             else if (posicaoX < cordenadaPredador.PosicaoX)
             {
                 if (tamanho - 1 - cordenadaPredador.PosicaoX + posicaoX > cordenadaPredador.PosicaoX - posicaoX)
-                    return new Cordenada(ValidaPosicao(posicaoX + 1, tamanho), posicaoY);
-                else
                     return new Cordenada(ValidaPosicao(posicaoX - 1, tamanho), posicaoY);
+                else
+                    return new Cordenada(ValidaPosicao(posicaoX + 1, tamanho), posicaoY);
             }
             else
             {
@@ -414,7 +419,7 @@ namespace PredadorPresa.Entities
             return false;
         }
 
-        private static int ValidaQuantidadeEmocao(int quantidadeEmocao)
+        private static int ValidaQualidadeEmocao(int quantidadeEmocao)
         {
             if (quantidadeEmocao > 3)
                 return 3;

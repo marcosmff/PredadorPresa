@@ -1,6 +1,6 @@
 ﻿.ambiente-posicao {
     display: flex;
-    flex-wrap: nowrap; /* this is default */
+    flex-wrap: nowrap;
 }
 
 .ambiente-azul {

@@ -10,10 +10,8 @@ namespace PredadorPresa.Controllers
     public class PredadorPresaController : ControllerBase
     {
         [HttpGet]
-        public string[][] Get()
+        public string[][] Get([FromQuery] int tamanho)
         {
-            var tamanho = 20;
-
             if (Ambiente.Movimenta(tamanho))
                 return new string[1][];
 
